@@ -1,0 +1,71 @@
+services:
+  rest-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: adventureworks-rest-api
+
+    command:
+      [
+        "uvicorn",
+        "rest_api:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ]
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env
+
+    environment:
+      SQL_SERVER: host.docker.internal
+      SQL_PORT: 1433
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    volumes:
+      - product-data:/app/data
+
+    restart: unless-stopped
+
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: adventureworks-mcp-server
+
+    command:
+      [
+        "python",
+        "mcp_server.py"
+      ]
+
+    ports:
+      - "8001:8001"
+
+    env_file:
+      - .env
+
+    environment:
+      SQL_SERVER: host.docker.internal
+      SQL_PORT: 1433
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8001
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    volumes:
+      - product-data:/app/data
+
+    restart: unless-stopped
+
+volumes:
+  product-data:
